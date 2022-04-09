@@ -81,7 +81,7 @@ public class DemowebshopTests extends TestBase {
   }
 
   @Test
-  @DisplayName("Добавление и удаление из списка сравнения")
+  @DisplayName("Добавление в список сравнения")
   void addToCompareListTest() {
     // Достаем куки из метода авторизации
     Map<String, String> authCookies =
