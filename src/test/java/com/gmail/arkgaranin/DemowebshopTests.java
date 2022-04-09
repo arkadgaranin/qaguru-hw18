@@ -6,14 +6,17 @@ import org.openqa.selenium.Cookie;
 
 import java.util.Map;
 
+import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.text;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.Selenide.*;
 import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
 public class DemowebshopTests extends TestBase {
+
+  String email = "arktest@test.com";
+  String password = "qwerty";
 
   @Test
   @DisplayName("Успешная регистрация через api/UI")
@@ -26,9 +29,9 @@ public class DemowebshopTests extends TestBase {
         .formParam("Gender", "M")
         .formParam("FirstName", "Arkadiy")
         .formParam("LastName", "Garanin")
-        .formParam("Email", "arktest@test.com")
-        .formParam("Password", "qwerty")
-        .formParam("ConfirmPassword", "qwerty")
+        .formParam("Email", email)
+        .formParam("Password", password)
+        .formParam("ConfirmPassword", password)
         .formParam("register-button", "Register")
         .when()
         .post("/register")
@@ -56,7 +59,7 @@ public class DemowebshopTests extends TestBase {
   void signUpForNewsletterTest() {
     given()
         .contentType("application/x-www-form-urlencoded; charset=UTF-8")
-        .body("email=testemail@test.ru")
+        .body("email=" + email)
         .when()
         .post("/subscribenewsletter")
         .then()
@@ -87,8 +90,8 @@ public class DemowebshopTests extends TestBase {
     Map<String, String> authCookies =
         given()
             .contentType("application/x-www-form-urlencoded; charset=UTF-8")
-            .formParam("Email", "arktest@test.com")
-            .formParam("Password", "qwerty")
+            .formParam("Email", email)
+            .formParam("Password", password)
             .when()
             .post("/login")
             .then()
@@ -104,7 +107,7 @@ public class DemowebshopTests extends TestBase {
     getWebDriver().manage().addCookie(
         new Cookie("NOPCOMMERCE.AUTH", authCookies.get("NOPCOMMERCE.AUTH")));
     open("");
-    $(".account").shouldHave(text("arktest@test.com"));
+    $(".account").shouldHave(text(email));
 
     // Добавляем в список сравнения 2 компьютера и проверяем по статус коду, что они добавились
     int[] id = {31, 72};
@@ -116,7 +119,13 @@ public class DemowebshopTests extends TestBase {
           .when()
           .get(String.format("/compareproducts/add/%d", i))
           .then()
+          .log().all()
           .statusCode(200);
     }
+
+    // Переход на стр-цу списка сравнения и проверка, что в списке 2 добавленных компа
+    open("/compareproducts");
+    $$(".compare-products-table .product-name a")
+        .shouldHave(texts("Build your own cheap computer", "14.1-inch Laptop"));
   }
 }
